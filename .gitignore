@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Testing & linting caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Data files — never commit personal bank exports
+*.csv
+*.xlsx
+*.xls
+sample_data/
+
+# Test directory — may contain fixtures with real transaction data
+tests/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Project-local notes & Claude tooling
+.claude/
+CLAUDE.md
+conda_venv.md
+project_markdown.md

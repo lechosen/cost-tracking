@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cost Tracker</title>
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body>
+  <!-- PIN gate -->
+  <div id="pin-gate" class="overlay">
+    <div class="pin-box">
+      <h2>Household Cost Tracker</h2>
+      <input id="pin-input" type="password" placeholder="Enter PIN" autocomplete="off" />
+      <button id="pin-submit">Enter</button>
+      <p id="pin-error" class="error hidden">Incorrect PIN</p>
+    </div>
+  </div>
+
+  <!-- Main app -->
+  <div id="app" class="hidden">
+    <nav class="navbar">
+      <span class="brand">Cost Tracker</span>
+      <div class="nav-tabs">
+        <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+        <button class="tab-btn" data-tab="review">Review</button>
+        <button class="tab-btn" data-tab="upload">Upload</button>
+        <button class="tab-btn" data-tab="cash">Cash Entry</button>
+        <button class="tab-btn" data-tab="import">Import Historical</button>
+      </div>
+    </nav>
+
+    <!-- Dashboard tab -->
+    <section id="tab-dashboard" class="tab-content active">
+      <div class="section-header">
+        <h2>Monthly Overview</h2>
+        <div class="controls">
+          <select id="dash-year"></select>
+          <select id="dash-month">
+            <option value="1">Jan</option><option value="2">Feb</option>
+            <option value="3">Mar</option><option value="4">Apr</option>
+            <option value="5">May</option><option value="6">Jun</option>
+            <option value="7">Jul</option><option value="8">Aug</option>
+            <option value="9">Sep</option><option value="10">Oct</option>
+            <option value="11">Nov</option><option value="12">Dec</option>
+          </select>
+          <button id="dash-load">Load</button>
+        </div>
+      </div>
+      <div id="dash-summary" class="summary-cards"></div>
+      <div class="charts-row">
+        <div class="chart-box">
+          <h3>Expense Breakdown</h3>
+          <canvas id="category-chart"></canvas>
+        </div>
+        <div class="chart-box">
+          <h3>Income vs Expense</h3>
+          <canvas id="monthly-bar-chart"></canvas>
+        </div>
+      </div>
+      <div class="charts-row">
+        <div class="chart-box">
+          <div class="chart-box-header">
+            <h3>Historical Trend</h3>
+            <label class="toggle-switch" title="Switch to monthly category breakdown">
+              <input type="checkbox" id="history-toggle" />
+              <span class="toggle-slider"></span>
+              <span>Breakdown</span>
+            </label>
+          </div>
+          <canvas id="history-chart" height="220"></canvas>
+        </div>
+        <div class="chart-box">
+          <h3>Cumulative Savings &amp; Investment</h3>
+          <canvas id="cumulative-chart" height="220"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Review tab -->
+    <section id="tab-review" class="tab-content hidden">
+      <div class="section-header">
+        <h2>Review Transactions</h2>
+        <div class="controls">
+          <select id="review-year"></select>
+          <select id="review-month">
+            <option value="1">Jan</option><option value="2">Feb</option>
+            <option value="3">Mar</option><option value="4">Apr</option>
+            <option value="5">May</option><option value="6">Jun</option>
+            <option value="7">Jul</option><option value="8">Aug</option>
+            <option value="9">Sep</option><option value="10">Oct</option>
+            <option value="11">Nov</option><option value="12">Dec</option>
+          </select>
+          <select id="review-filter">
+            <option value="pending">Pending Review</option>
+            <option value="reviewed">Reviewed (Unpublished)</option>
+            <option value="published">Published</option>
+          </select>
+          <button id="review-load">Load</button>
+        </div>
+      </div>
+      <div id="bulk-actions-bar" style="display:none">
+        <span id="bulk-count"></span>
+        <button id="publish-selected" class="btn-primary">Publish Selected</button>
+        <button id="remove-selected" class="btn-danger">Remove Selected</button>
+      </div>
+      <div class="info-box">
+        <strong>Transfer In</strong> — use this when someone reimburses you. A second dropdown appears so you can pick which category it offsets (e.g. Dining &amp; Takeout). That category's slice in the pie chart shrinks accordingly.<br>
+        <strong>Transfer for Saving</strong> — money moved to savings; shown separately, not counted as expense.<br>
+        <strong>Investment</strong> — RRSP/TFSA/brokerage deposits; shown separately, not counted as expense.
+      </div>
+      <div id="review-table-wrap">
+        <table id="review-table">
+          <thead>
+            <tr>
+              <th><input type="checkbox" id="select-all" /></th>
+              <th>Date</th><th>Description</th><th>Amount</th>
+              <th>Account</th><th>LLM Category</th><th>Confirmed Category</th><th>Notes</th><th></th>
+            </tr>
+            <tr id="col-filter-row">
+              <th></th>
+              <th><select class="col-filter" data-col="date"><option value="">All Dates</option></select></th>
+              <th><input class="col-filter-text" data-col="desc" placeholder="Search…" type="text" /></th>
+              <th><select class="col-filter" data-col="dir"><option value="">All</option><option value="out">Expense</option><option value="in">Income</option></select></th>
+              <th><select class="col-filter" data-col="account"><option value="">All Accounts</option></select></th>
+              <th><select class="col-filter" data-col="llm"><option value="">All</option></select></th>
+              <th><select class="col-filter" data-col="confirmed"><option value="">All</option></select></th>
+              <th></th><th></th>
+            </tr>
+          </thead>
+          <tbody id="review-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Upload tab -->
+    <section id="tab-upload" class="tab-content hidden">
+      <div class="section-header"><h2>Upload Statement</h2></div>
+      <div class="upload-zone" id="drop-zone">
+        <p>Drag & drop a CSV or XLSX file here, or</p>
+        <label class="btn-primary" style="display:inline-block;margin-top:.5rem">
+          Choose File
+          <input type="file" id="file-input" accept=".csv,.xlsx,.xls" hidden />
+        </label>
+        <p id="upload-filename" style="margin-top:.5rem"></p>
+      </div>
+      <button id="upload-submit" class="btn-primary" disabled>Upload & Categorize</button>
+      <div id="upload-result"></div>
+    </section>
+
+    <!-- Cash Entry tab -->
+    <section id="tab-cash" class="tab-content hidden">
+      <div class="section-header"><h2>Manual Cash Entry</h2></div>
+      <form id="cash-form" class="form-card">
+        <div class="form-row">
+          <label>Date <input type="date" name="date" required /></label>
+          <label>Direction
+            <select name="direction">
+              <option value="out">Expense (out)</option>
+              <option value="in">Income (in)</option>
+            </select>
+          </label>
+        </div>
+        <div class="form-row">
+          <label>Amount ($) <input type="number" name="amount" step="0.01" min="0.01" required /></label>
+          <label>Category
+            <select name="category">
+              <option>Food & Groceries</option>
+              <option>Dining & Takeout</option>
+              <option>Transport</option>
+              <option>Utilities</option>
+              <option>Rent & Mortgage</option>
+              <option>Health & Medical</option>
+              <option>Insurance</option>
+              <option>Entertainment & Subscriptions</option>
+              <option>Shopping</option>
+              <option>House Supplies</option>
+              <option>Travel</option>
+              <option>Phone & Internet</option>
+              <option>Property Tax</option>
+              <option>Income</option>
+              <option>Transfer In</option>
+              <option>Transfer for Saving</option>
+              <option>Investment</option>
+              <option>Other</option>
+            </select>
+          </label>
+        </div>
+        <label>Description <input type="text" name="description" required /></label>
+        <button type="submit" class="btn-primary">Add Entry</button>
+        <p id="cash-result"></p>
+      </form>
+      <h3>Recent Cash Entries</h3>
+      <div id="cash-list"></div>
+    </section>
+    <!-- Import Historical tab -->
+    <section id="tab-import" class="tab-content hidden">
+      <div class="section-header"><h2>Import Historical Data</h2></div>
+      <div class="info-box">
+        Upload a CSV with monthly lump-sum totals per category. Each row is imported as a confirmed cash entry.<br>
+        <strong>Required columns (header row mandatory):</strong>
+        <code>year, month, category, amount, direction</code><br>
+        Direction must be <code>in</code> (income) or <code>out</code> (expense).
+        <strong>Warning:</strong> re-uploading the same file will create duplicates — check Published records first.
+      </div>
+      <div class="upload-zone" id="import-drop-zone">
+        <p>Drag & drop a CSV here, or</p>
+        <label class="btn-primary" style="display:inline-block;margin-top:.5rem">
+          Choose File
+          <input type="file" id="import-file-input" accept=".csv" hidden />
+        </label>
+        <p id="import-filename" style="margin-top:.5rem;color:var(--muted)"></p>
+      </div>
+      <div id="import-preview"></div>
+      <button id="import-confirm" class="btn-primary" disabled style="margin-top:1rem">Import Records</button>
+      <p id="import-result" style="margin-top:.5rem"></p>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/dashboard.js"></script>
+  <script src="/js/review.js"></script>
+  <script src="/js/upload.js"></script>
+  <script src="/js/cash.js"></script>
+  <script src="/js/import_historical.js"></script>
+  <script src="/js/main.js"></script>
+</body>
+</html>
