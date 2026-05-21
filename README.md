@@ -1,13 +1,15 @@
 # Cost Tracking — Household Expense Tracker
 
-A locally-hosted web app for tracking household finances. Members upload monthly bank CSV/XLSX exports, an LLM categorizes each transaction automatically, and a shared dashboard shows spending and earnings by month across all historical years. No cloud accounts required — everything runs on your home network.
+A locally-hosted web app for tracking household finances. Members upload monthly bank CSV/XLSX exports, a **local LLM (via [Ollama](https://ollama.com)) categorizes each transaction on-device**, and a shared dashboard shows spending and earnings by month across all historical years.
+
+**No API keys. No cloud. No data leaves your machine.**
 
 ---
 
 ## Features
 
 - Upload bank exports (CSV / XLSX) from multiple members
-- Automatic transaction categorization via Claude API (Food, Rent, Utilities, Transport, Entertainment, Health, Other)
+- Automatic transaction categorization via a **local Ollama model** — runs fully on your machine, no internet required
 - Manual review and correction before publishing results
 - Monthly earnings vs. spending dashboard with full history
 - Manual cash entry per member
@@ -18,7 +20,9 @@ A locally-hosted web app for tracking household finances. Members upload monthly
 ## Requirements
 
 - Python 3.11+
-- An [Anthropic API key](https://console.anthropic.com/) for LLM categorization
+- [Ollama](https://ollama.com) installed and running locally (used for LLM categorization — **no API key needed**)
+  - Default model: `qwen2.5:latest` — pull it once with `ollama pull qwen2.5`
+  - Any other Ollama-compatible model works; set `OLLAMA_MODEL` in `.env` to override
 
 ---
 
@@ -45,9 +49,10 @@ cp .env.example .env
 `.env` template (also provided as `.env.example`):
 
 ```
-ANTHROPIC_API_KEY=sk-ant-...
 DATABASE_URL=sqlite:///./cost_tool.db
 PIN=1234
+OLLAMA_URL=http://localhost:11434
+OLLAMA_MODEL=qwen2.5:latest
 ```
 
 ---
@@ -116,9 +121,13 @@ The app auto-creates tables on first run via SQLAlchemy. For schema changes, add
 
 Bank CSV/XLSX formats vary. `parser.py` normalizes columns automatically using a small LLM prompt for unknown headers. If a new format fails, open `app/services/parser.py` and add a manual mapping under `COLUMN_ALIASES`.
 
-### Changing categories
+### Changing categories or categorization rules
 
-Edit the `CATEGORIES` list in `app/services/categorizer.py` and update the system prompt. Existing categorized transactions keep their old labels; re-run categorization on those months if needed.
+Edit `CATEGORIES` and the rules block inside `build_system_prompt()` in [app/services/categorizer.py](app/services/categorizer.py). Existing confirmed transactions keep their labels; re-trigger categorization on those months if needed.
+
+### Swapping the Ollama model
+
+Set `OLLAMA_MODEL` in `.env` to any model you have pulled locally (e.g. `llama3.2`, `mistral`). Larger models are more accurate but slower — `qwen2.5:latest` (7.6B) is a good balance for a home server.
 
 ---
 
@@ -136,7 +145,7 @@ Edit the `CATEGORIES` list in `app/services/categorizer.py` and update the syste
 
 ## Privacy
 
-All data stays local — nothing leaves your machine except the transaction *descriptions* sent to the Anthropic API for categorization. Bank account numbers, balances, and raw files are never transmitted. If you prefer fully offline categorization, the categorizer can be swapped for a local Ollama model (see `app/services/categorizer.py`).
+**Everything stays on your machine.** Transaction categorization runs via a local Ollama model — no data is ever sent to an external API or third-party service. Bank account numbers, balances, and raw files never leave your network.
 
 ---
 
