@@ -7,6 +7,20 @@ A locally-hosted web app for tracking household finances. Members upload monthly
 
 ---
 
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Backend** | ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white) ![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?logo=fastapi&logoColor=white) |
+| **Frontend** | ![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white) ![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white) ![JavaScript](https://img.shields.io/badge/Vanilla_JS-F7DF1E?logo=javascript&logoColor=black) |
+| **Database** | ![SQLite](https://img.shields.io/badge/SQLite-003B57?logo=sqlite&logoColor=white) via SQLAlchemy ORM |
+| **File Parsing** | ![pandas](https://img.shields.io/badge/pandas-150458?logo=pandas&logoColor=white) + openpyxl (CSV & XLSX) |
+| **LLM** | ![Ollama](https://img.shields.io/badge/Ollama-local-black) `qwen2.5` — fully on-device, no API key |
+| **Auth** | Lightweight PIN — no OAuth, no sessions |
+| **Deployment** | LAN-hosted via `uvicorn`, accessible from any device on the same Wi-Fi |
+
+---
+
 ## Features
 
 - Upload bank exports (CSV / XLSX) from multiple members
