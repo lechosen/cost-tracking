@@ -3,6 +3,7 @@
 A locally-hosted web app for tracking household finances. Members upload monthly bank CSV/XLSX exports, a **local LLM (via [Ollama](https://ollama.com)) categorizes each transaction on-device**, and a shared dashboard shows spending and earnings by month across all historical years.
 
 **No API keys. No cloud. No data leaves your machine.**
+<img width="3200" height="1670" alt="image" src="https://github.com/user-attachments/assets/7e218175-78d2-49c1-9700-c7d811fb78e5" />
 
 ---
 
